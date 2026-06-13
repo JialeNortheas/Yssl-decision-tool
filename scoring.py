@@ -19,12 +19,24 @@ Maps to the sponsor's three Tuesday questions:
 
 from __future__ import annotations
 import os
+import base64
+import io
+import requests
+import streamlit as st
 import pandas as pd
 
-WORKBOOK = os.environ.get(
-    "YSSL_WORKBOOK",
-    "https://raw.githubusercontent.com/JialeNortheas/yssl-crm-data/main/YSSL_CRM_Library_Populated_v2_2026-06-09.xlsx",
-)
+WORKBOOK = "YSSL_CRM_Library_Populated_v2_2026-06-09.xlsx"
+
+
+def _fetch_private_file(path):
+    url = f"https://api.github.com/repos/JialeNortheas/yssl-crm-data/contents/{path}"
+    headers = {
+        "Authorization": f"token {st.secrets['github_token']}",
+        "Accept": "application/vnd.github.raw",
+    }
+    resp = requests.get(url, headers=headers)
+    resp.raise_for_status()
+    return io.BytesIO(resp.content)
 
 REGION_BY_PROVINCE = {
     "NB": "Canada-East", "NS": "Canada-East", "PE": "Canada-East", "NL": "Canada-East",
@@ -44,8 +56,8 @@ GOALS = {
 
 def load_crm(path: str = WORKBOOK) -> pd.DataFrame:
     """Load Contacts and Companies into one unified, scored-ready frame."""
-    contacts = pd.read_excel(path, sheet_name="Contacts")
-    companies = pd.read_excel(path, sheet_name="Companies")
+    contacts = pd.read_excel(_fetch_private_file(path), sheet_name="Contacts")
+    companies = pd.read_excel(_fetch_private_file(path), sheet_name="Companies")
 
     contacts = contacts.assign(entity="Contact",
                                name=contacts["full_name"],

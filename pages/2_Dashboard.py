@@ -25,9 +25,8 @@ st.caption("Dormant Contact = records carrying a compliance / enforcement flag."
 
 # Q3 — IP-cost history (real external CIPO reference set)
 st.subheader("Q3 · IP-protection cost over time (CIPO)")
-ip_path = "https://raw.githubusercontent.com/JialeNortheas/yssl-crm-data/main/IP_Cost_History_CIPO.csv"
 try:
-    ip = pd.read_csv(ip_path)
+    ip = pd.read_csv(scoring._fetch_private_file("IP_Cost_History_CIPO.csv"))
     pub = ip[ip["basis"] == "CIPO published"]
     pivot = pub.pivot_table(index="year", columns="ip_type",
                             values="amount_cad", aggfunc="max")
